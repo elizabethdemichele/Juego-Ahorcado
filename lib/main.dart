@@ -111,6 +111,53 @@ class AhorcadoPageState extends State<AhorcadoPage> {
   class AhorcadoPainter extends CustomPainter {
     final int errores;
     AhorcadoPainter(this.errores);
-    // TODO
+
+    @override
+    void paint(Canvas canvas, Size size) {
+      final paint = Paint()
+        ..color = Colors.brown
+        ..strokeWidth = 4
+        ..style = PaintingStyle.stroke;
+
+      // Base de la horca
+      canvas.drawLine(Offset(20, size.height - 20), Offset(100, size.height - 20), paint);
+      // Poste vertical
+      canvas.drawLine(Offset(60, size.height - 20), Offset(60, 40), paint);
+      // Travesaño superior
+      canvas.drawLine(Offset(60, 40), Offset(120, 40), paint);
+      // Cuerda
+      canvas.drawLine(Offset(120, 40), Offset(120, 60), paint);
+  
+      // Dibujo del muñeco en sí
+      final paintMuneco = Paint()
+        ..color = Colors.black
+        ..strokeWidth = 3
+        ..style = PaintingStyle.stroke;
+      // Empezar a dibujar si se cometieron errores
+      if (errores >= 1) {
+        // Cabeza
+        canvas.drawCircle(Offset(120, 75), 15, paintMuneco);
+      }
+      if (errores >= 2) {
+        // Cuerpo
+        canvas.drawLine(Offset(120, 90), Offset(120, 150), paintMuneco);
+      }
+      if (errores >= 3) {
+        // Brazo izquierdo
+        canvas.drawLine(Offset(120, 110), Offset(100, 130), paintMuneco);
+      }
+      if (errores >= 4) {
+        // Brazo derecho
+        canvas.drawLine(Offset(120, 110), Offset(140, 130), paintMuneco);
+      }
+      if (errores >= 5) {
+        // Pierna izquierda
+        canvas.drawLine(Offset(120, 150), Offset(100, 180), paintMuneco);
+      }
+      if (errores >= 6) {
+        // Pierna derecha
+        canvas.drawLine(Offset(120, 150), Offset(140, 180), paintMuneco);
+      }
+    }
   }
 }
