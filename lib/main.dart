@@ -106,4 +106,11 @@ class AhorcadoPageState extends State<AhorcadoPage> {
       ),
     );
   }
+
+  // Clase AhorcadoPainter
+  class AhorcadoPainter extends CustomPainter {
+    final int errores;
+    AhorcadoPainter(this.errores);
+    // TODO
+  }
 }
