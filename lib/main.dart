@@ -18,7 +18,6 @@ class AhorcadoPage extends StatefulWidget {
   AhorcadoPageState createState() => AhorcadoPageState();
 }
 
-// Estado de la página del Ahorcado
 class AhorcadoPageState extends State<AhorcadoPage> {
   List<String> palabras = ['INTERNET', 'INFORMACION', 'JUEGO', 'CODIGO', 'MOVIL', 'PROGRAMA', 'COMPUTADORA'];
   String palabra = '';
@@ -50,16 +49,14 @@ class AhorcadoPageState extends State<AhorcadoPage> {
   }
 
   void adivinarLetra(String letra) {
-    // Retornar si se adivinó una letra
     if (letrasUsadas.contains(letra)) return;
-    // De lo contrario, actualizar errores o terminar
+
     setState(() {
-      // Incrementar los errores si se cometió uno
       letrasUsadas.add(letra);
       if (!palabra.contains(letra)) {
         errores++;
       }
-      // Mostrar mensaje de fin si el juego terminó
+      // Verificar si el juego terminó para contar la partida
       if ((gano() || perdio()) && !dialogoMostrado) {
         partidasJugadas++;
         dialogoMostrado = true;
@@ -67,7 +64,7 @@ class AhorcadoPageState extends State<AhorcadoPage> {
     });
   }
 
-  // Mostrar la palabra mientras se va adivinando
+  // Mostrar la palabra mientras se vaya adivinando
   String mostrarPalabra() {
     String resultado = '';
     for (int i = 0; i < palabra.length; i++) {
@@ -81,32 +78,33 @@ class AhorcadoPageState extends State<AhorcadoPage> {
     return resultado;
   }
 
-  // Función para evaluar si el usuario ganó
+  // Función para verificar si el usuario ganó el juego
   bool gano() {
     for (int i = 0; i < palabra.length; i++) {
       if (!letrasUsadas.contains(palabra[i])) {
-        return false; // No ha ganado si una letra no es correcta
+        return false;
       }
     }
     return true;
   }
 
-  // Función para evaluar si el usuario perdió
+  // Función para verificar si el usuario perdió
   bool perdio() {
-    return errores >= maxErrores; // Pierde si los errores superan el máximo
+    return errores >= maxErrores;
   }
 
-  // Contenedor del dibujo principal
+  // Dibujar el ahorcado dado el número de errores
   Widget dibujarAhorcado() {
-    return Container(
-      height: 200,
-      width: 150,
+    return SizedBox(
+      height: 240,
+      width: 170,
       child: CustomPaint(
         painter: AhorcadoPainter(errores),
       ),
     );
   }
 
+  // Mostrar diálogo de resumen si terminó la partida
   void _mostrarDialogo() {
     showDialog(
       context: context,
@@ -126,57 +124,136 @@ class AhorcadoPageState extends State<AhorcadoPage> {
     );
   }
 
-  // Clase AhorcadoPainter
-  class AhorcadoPainter extends CustomPainter {
-    final int errores;
-    AhorcadoPainter(this.errores);
+  @override
+  Widget build(BuildContext context) {
+    // Mostrar el diálogo de resumen si el partido terminó
+    if ((gano() || perdio()) && !dialogoMostrado) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _mostrarDialogo();
+      });
+    }
+    // De lo contrario, mostrar el juego
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('El Ahorcado')
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Contador de partidas jugadas
+            Padding(
+              padding: EdgeInsets.all(1.0),
+              child: Center(
+                child: Text(
+                  'Partidas jugadas: $partidasJugadas',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+            // Dibujo del ahorcado
+            dibujarAhorcado(),
+            // Palabra oculta
+            Text(
+              mostrarPalabra(),
+              style: TextStyle(fontSize: 30),
+            ),
+            // Contador de errores
+            Text(
+              'Errores: $errores/$maxErrores',
+              style: TextStyle(
+                fontSize: 18,
+                color: errores >= maxErrores ? Colors.red : Colors.black,
+              ),
+            ),
+            
+            SizedBox(height: 20),
+            
+            // Teclado simple
+            Wrap(
+              children: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map((letra) {
+                return Padding(
+                  padding: EdgeInsets.all(2),
+                  child: ElevatedButton(
+                    onPressed: letrasUsadas.contains(letra) || gano() || perdio() 
+                        ? null 
+                        : () => adivinarLetra(letra),
+                    child: Text(letra),
+                  ),
+                );
+              }).toList(),
+            ),
+            
+            SizedBox(height: 20),
+            
+            // Botón de reinicio
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  empezarJuego();
+                });
+              },
+              child: Text('Nuevo Juego'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
-    @override
-    void paint(Canvas canvas, Size size) {
-      final paint = Paint()
-        ..color = Colors.brown
-        ..strokeWidth = 4
-        ..style = PaintingStyle.stroke;
 
-      // Base de la horca
-      canvas.drawLine(Offset(20, size.height - 20), Offset(100, size.height - 20), paint);
-      // Poste vertical
-      canvas.drawLine(Offset(60, size.height - 20), Offset(60, 40), paint);
-      // Travesaño superior
-      canvas.drawLine(Offset(60, 40), Offset(120, 40), paint);
-      // Cuerda
-      canvas.drawLine(Offset(120, 40), Offset(120, 60), paint);
+class AhorcadoPainter extends CustomPainter {
+  final int errores;
   
-      // Dibujo del muñeco en sí
-      final paintMuneco = Paint()
-        ..color = Colors.black
-        ..strokeWidth = 3
-        ..style = PaintingStyle.stroke;
-      // Empezar a dibujar si se cometieron errores
-      if (errores >= 1) {
-        // Cabeza
-        canvas.drawCircle(Offset(120, 75), 15, paintMuneco);
-      }
-      if (errores >= 2) {
-        // Cuerpo
-        canvas.drawLine(Offset(120, 90), Offset(120, 150), paintMuneco);
-      }
-      if (errores >= 3) {
-        // Brazo izquierdo
-        canvas.drawLine(Offset(120, 110), Offset(100, 130), paintMuneco);
-      }
-      if (errores >= 4) {
-        // Brazo derecho
-        canvas.drawLine(Offset(120, 110), Offset(140, 130), paintMuneco);
-      }
-      if (errores >= 5) {
-        // Pierna izquierda
-        canvas.drawLine(Offset(120, 150), Offset(100, 180), paintMuneco);
-      }
-      if (errores >= 6) {
-        // Pierna derecha
-        canvas.drawLine(Offset(120, 150), Offset(140, 180), paintMuneco);
-      }
+  AhorcadoPainter(this.errores);
+  
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.brown
+      ..strokeWidth = 4
+      ..style = PaintingStyle.stroke;
+
+    // Dibujo del ahorcado
+    // Base
+    canvas.drawLine(Offset(20, size.height - 20), Offset(100, size.height - 20), paint);
+    // Poste vertical
+    canvas.drawLine(Offset(60, size.height - 20), Offset(60, 40), paint);
+    // Poste superior
+    canvas.drawLine(Offset(60, 40), Offset(120, 40), paint);
+    // Cuerda
+    canvas.drawLine(Offset(120, 40), Offset(120, 60), paint);
+    // Muñeco
+    // Atributos generales del muñeco
+    final paintMuneco = Paint()
+      ..color = Colors.black
+      ..strokeWidth = 3
+      ..style = PaintingStyle.stroke;
+    // Empezar a dibujar el muñeco si se cometieron errores
+    if (errores >= 1) {
+      // Cabeza
+      canvas.drawCircle(Offset(120, 75), 15, paintMuneco);
+    }
+    if (errores >= 2) {
+      // Cuerpo
+      canvas.drawLine(Offset(120, 90), Offset(120, 150), paintMuneco);
+    }
+    if (errores >= 3) {
+      // Brazo izquierdo
+      canvas.drawLine(Offset(120, 110), Offset(100, 130), paintMuneco);
+    }
+    if (errores >= 4) {
+      // Brazo derecho
+      canvas.drawLine(Offset(120, 110), Offset(140, 130), paintMuneco);
+    }
+    if (errores >= 5) {
+      // Pierna izquierda
+      canvas.drawLine(Offset(120, 150), Offset(100, 180), paintMuneco);
+    }
+    if (errores >= 6) {
+      // Pierna derecha
+      canvas.drawLine(Offset(120, 150), Offset(140, 180), paintMuneco);
     }
   }
 }
