@@ -107,6 +107,25 @@ class AhorcadoPageState extends State<AhorcadoPage> {
     );
   }
 
+  void _mostrarDialogo() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(gano() ? '¡Ganaste!' : '¡Perdiste!'),
+        content: Text('La palabra era: $palabra'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              empezarJuego();
+            },
+            child: Text('Jugar de nuevo'),
+          ),
+        ],
+      ),
+    );
+  }
+
   // Clase AhorcadoPainter
   class AhorcadoPainter extends CustomPainter {
     final int errores;
