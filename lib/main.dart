@@ -56,12 +56,12 @@ class AhorcadoPageState extends State<AhorcadoPage> {
       if (!palabra.contains(letra)) {
         errores++;
       }
-      // Verificar si el juego terminó para contar la partida
-      if ((gano() || perdio()) && !dialogoMostrado) {
-        partidasJugadas++;
-        dialogoMostrado = true;
-      }
     });
+
+    // Verificar después de actualizar el estado si el juego terminó
+    if ((gano() || perdio()) && !dialogoMostrado) {
+      _mostrarDialogo();
+    }
   }
 
   // Mostrar la palabra mientras se vaya adivinando
@@ -106,8 +106,17 @@ class AhorcadoPageState extends State<AhorcadoPage> {
 
   // Mostrar diálogo de resumen si terminó la partida
   void _mostrarDialogo() {
+    // Marcar que el diálogo se está mostrando
+    setState(() {
+      dialogoMostrado = true;
+    });
+    
+    // Incrementar partidas jugadas
+    partidasJugadas++;
+
     showDialog(
       context: context,
+      barrierDismissible: false, // Evitar que se cierre tocando fuera
       builder: (context) => AlertDialog(
         title: Text(gano() ? '¡Ganaste!' : '¡Perdiste!'),
         content: Text('La palabra era: $palabra'),
@@ -126,13 +135,6 @@ class AhorcadoPageState extends State<AhorcadoPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Mostrar el diálogo de resumen si el partido terminó
-    if ((gano() || perdio()) && !dialogoMostrado) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _mostrarDialogo();
-      });
-    }
-    // De lo contrario, mostrar el juego
     return Scaffold(
       appBar: AppBar(
         title: Text('El Ahorcado')
@@ -255,5 +257,10 @@ class AhorcadoPainter extends CustomPainter {
       // Pierna derecha
       canvas.drawLine(Offset(120, 150), Offset(140, 180), paintMuneco);
     }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return true;
   }
 }
